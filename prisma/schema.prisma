@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         UserRole  @default(ATTENDEE)
+  avatarUrl    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  events       Event[]   @relation("OrganiserEvents")
+  tickets      Ticket[]
+  checkIns     CheckIn[] @relation("CheckedInBy")
+}
+
+model Event {
+  id          String      @id @default(uuid())
+  title       String
+  description String
+  dateTime    DateTime
+  location    String
+  capacity    Int
+  imageUrl    String?
+  category    String?
+  status      EventStatus @default(PUBLISHED)
+  organiserId String
+  organiser   User        @relation("OrganiserEvents", fields: [organiserId], references: [id])
+  tickets     Ticket[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Ticket {
+  id         String       @id @default(uuid())
+  userId     String
+  eventId    String
+  qrCode     String       @unique
+  ticketType TicketType   @default(FREE)
+  status     TicketStatus @default(CONFIRMED)
+  user       User         @relation(fields: [userId], references: [id])
+  event      Event        @relation(fields: [eventId], references: [id])
+  checkIn    CheckIn?
+  createdAt  DateTime     @default(now())
+}
+
+model CheckIn {
+  id          String   @id @default(uuid())
+  ticketId    String   @unique
+  checkedInAt DateTime @default(now())
+  checkedInBy String
+  ticket      Ticket   @relation(fields: [ticketId], references: [id])
+  performer   User     @relation("CheckedInBy", fields: [checkedInBy], references: [id])
+}
+
+enum UserRole {
+  ATTENDEE
+  ORGANISER
+  ADMIN
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum TicketStatus {
+  CONFIRMED
+  CANCELLED
+  WAITLISTED
+}
+
+enum TicketType {
+  FREE
+  PAID
+}

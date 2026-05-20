@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "code-review-graph": {
+      "command": "uvx",
+      "args": [
+        "code-review-graph",
+        "serve"
+      ],
+      "cwd": "/Users/sandeepgautam/CDU/2026/Semester1/PRT581/project-report/backend",
+      "type": "stdio"
+    }
+  }
+}
